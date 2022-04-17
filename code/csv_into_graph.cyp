@@ -1,7 +1,6 @@
 // Approx 20 min loading
 // CSV File at GCP : https://storage.googleapis.com/nyc-tree-plantation/Forstry_Planting_Cleaned_Dataset_3_27_2022.csv
 
-
 CREATE CONSTRAINT ON (plantingspace:PlantingSpace) ASSERT plantingspace.id IS UNIQUE;
 CREATE CONSTRAINT ON (area:Area) ASSERT area.NTA IS UNIQUE;
 CREATE CONSTRAINT ON (overheadutilities:OverheadUtilities) ASSERT overheadutilities.bool IS UNIQUE;
@@ -22,13 +21,15 @@ CREATE CONSTRAINT ON (districtcodes:DistrictCodes) ASSERT districtcodes.district
 
 :auto USING PERIODIC COMMIT 1000
 LOAD CSV With HEADERS FROM 'https://storage.googleapis.com/nyc-tree-plantation/Forstry_Planting_Cleaned_Dataset_3_27_2022.csv' AS row
-MERGE (plantingspace:PlantingSpace {id:row.OBJECTID});
+MERGE (plantingspace:PlantingSpace {id:row.OBJECTID})
+ON CREATE SET
+plantingspace.currentstatus = row.PSStatus,
+plantingspace.geometry = row.Geometry,
+plantingspace.latitude = row.latitude,
+plantingspace.longitude = row.longitude;
 
-:auto USING PERIODIC COMMIT 1000
-LOAD CSV With HEADERS FROM 'https://storage.googleapis.com/nyc-tree-plantation/Forstry_Planting_Cleaned_Dataset_3_27_2022.csv' AS row
-MERGE (overheadutilities:OverheadUtilities {bool:toBoolean(toInteger(row.OverheadUtilities))});
 
-// Create
+
 :auto USING PERIODIC COMMIT 1000
 LOAD CSV With HEADERS FROM 'https://storage.googleapis.com/nyc-tree-plantation/Forstry_Planting_Cleaned_Dataset_3_27_2022.csv' AS row
 MATCH (plantingspace:PlantingSpace {id:row.OBJECTID})
@@ -36,29 +37,95 @@ MATCH (overheadutilities:OverheadUtilities {bool:toBoolean(toInteger(row.Overhea
 MERGE (plantingspace)-[:HAS_OVERHEAD_LINES]->(overheadutilities);
 
 
-// CREATE STATUS
+
+CREATE CONSTRAINT ON (createdday:CreatedDay) ASSERT createdday.day IS UNIQUE;
+CREATE CONSTRAINT ON (createdmonth:CreatedMonth) ASSERT createdmonth.date IS UNIQUE;
+CREATE CONSTRAINT ON (createdyear:CreatedYear) ASSERT createdyear.year IS UNIQUE;
+CREATE CONSTRAINT ON (updatedday:UpdatedDay) ASSERT updatedday.day IS UNIQUE;
+CREATE CONSTRAINT ON (updatedmonth:UpdatedMonth) ASSERT updatedmonth.date IS UNIQUE;
+CREATE CONSTRAINT ON (updatedyear:UpdatedYear) ASSERT updatedyear.year IS UNIQUE;
+
+
 :auto USING PERIODIC COMMIT 1000
 LOAD CSV With HEADERS FROM 'https://storage.googleapis.com/nyc-tree-plantation/Forstry_Planting_Cleaned_Dataset_3_27_2022.csv' AS row
-MERGE (currentstatus:CurrentStatus {status:row.PSStatus});
+MERGE (inspection:Inspection {id: row.GlobalID });
 
-// *** 5 Unique values, try to restrict to 3 only
 :auto USING PERIODIC COMMIT 1000
 LOAD CSV With HEADERS FROM 'https://storage.googleapis.com/nyc-tree-plantation/Forstry_Planting_Cleaned_Dataset_3_27_2022.csv' AS row
 MATCH (plantingspace:PlantingSpace {id:row.OBJECTID})
-MATCH (currentstatus:CurrentStatus {status:row.PSStatus})
-MERGE (plantingspace)-[:HAVING_STATUS]->(currentstatus);
+MATCH (inspection:Inspection {id: row.GlobalID })
+MERGE (plantingspace)<-[:CARRIED_ON]-(inspection);
 
-// CREATE GEOMETRY
-// :auto USING PERIODIC COMMIT 1000
-// LOAD CSV With HEADERS FROM 'https://storage.googleapis.com/nyc-tree-plantation/Forstry_Planting_Cleaned_Dataset_3_27_2022.csv' AS row
-// MERGE (geometry:Geometry {point:row.Geometry});
+:auto USING PERIODIC COMMIT 1000
+LOAD CSV With HEADERS FROM 'https://storage.googleapis.com/nyc-tree-plantation/Forstry_Planting_Cleaned_Dataset_3_27_2022.csv' AS row
+MERGE (createdday:CreatedDay {day: row.Created_Day });
 
-//Create
-// :auto USING PERIODIC COMMIT 1000
-// LOAD CSV With HEADERS FROM 'https://storage.googleapis.com/nyc-tree-plantation/Forstry_Planting_Cleaned_Dataset_3_27_2022.csv' AS row
-// MATCH (plantingspace:PlantingSpace {id:row.OBJECTID})
-// MATCH (geometry:Geometry {point:row.Geometry})
-// MERGE (plantingspace)-[:HAS]->(geometry);
+:auto USING PERIODIC COMMIT 1000
+LOAD CSV With HEADERS FROM 'https://storage.googleapis.com/nyc-tree-plantation/Forstry_Planting_Cleaned_Dataset_3_27_2022.csv' AS row
+MERGE (createdmonth:CreatedMonth {month: row.Created_Month });
+
+:auto USING PERIODIC COMMIT 1000
+LOAD CSV With HEADERS FROM 'https://storage.googleapis.com/nyc-tree-plantation/Forstry_Planting_Cleaned_Dataset_3_27_2022.csv' AS row
+MERGE (createdyear:CreatedYear {year: row.Created_Year });
+
+:auto USING PERIODIC COMMIT 1000
+LOAD CSV With HEADERS FROM 'https://storage.googleapis.com/nyc-tree-plantation/Forstry_Planting_Cleaned_Dataset_3_27_2022.csv' AS row
+MATCH (createdday:CreatedDay {day:row.Created_Day})
+MATCH (inspection:Inspection {id: row.GlobalID })
+MERGE (createdday)<-[:CREATED_ON]-(inspection);
+
+:auto USING PERIODIC COMMIT 1000
+LOAD CSV With HEADERS FROM 'https://storage.googleapis.com/nyc-tree-plantation/Forstry_Planting_Cleaned_Dataset_3_27_2022.csv' AS row
+MATCH (createdmonth:CreatedMonth {month:row.Created_Month})
+MATCH (inspection:Inspection {id: row.GlobalID })
+MERGE (createdmonth)<-[:CREATED_ON]-(inspection);
+
+:auto USING PERIODIC COMMIT 1000
+LOAD CSV With HEADERS FROM 'https://storage.googleapis.com/nyc-tree-plantation/Forstry_Planting_Cleaned_Dataset_3_27_2022.csv' AS row
+MATCH (createdyear:CreatedYear  {year:row.Created_Year})
+MATCH (inspection:Inspection {id: row.GlobalID })
+MERGE (createdyear)<-[:CREATED_ON]-(inspection);
+
+:auto USING PERIODIC COMMIT 1000
+LOAD CSV With HEADERS FROM 'https://storage.googleapis.com/nyc-tree-plantation/Forstry_Planting_Cleaned_Dataset_3_27_2022.csv' AS row
+MERGE (updatedday:UpdatedDay {day: row.Updated_Day });
+
+:auto USING PERIODIC COMMIT 1000
+LOAD CSV With HEADERS FROM 'https://storage.googleapis.com/nyc-tree-plantation/Forstry_Planting_Cleaned_Dataset_3_27_2022.csv' AS row
+MERGE (updatedmonth:UpdatedMonth {month: row.Updated_Month });
+
+:auto USING PERIODIC COMMIT 1000
+LOAD CSV With HEADERS FROM 'https://storage.googleapis.com/nyc-tree-plantation/Forstry_Planting_Cleaned_Dataset_3_27_2022.csv' AS row
+MERGE (updatedyear:UpdatedYear {year: row.Updated_Year });
+
+:auto USING PERIODIC COMMIT 1000
+LOAD CSV With HEADERS FROM 'https://storage.googleapis.com/nyc-tree-plantation/Forstry_Planting_Cleaned_Dataset_3_27_2022.csv' AS row
+MATCH (updatedday:UpdatedDay {day:row.Updated_Day})
+MATCH (inspection:Inspection {id: row.GlobalID })
+MERGE (updatedday)<-[:CREATED_ON]-(inspection);
+
+:auto USING PERIODIC COMMIT 1000
+LOAD CSV With HEADERS FROM 'https://storage.googleapis.com/nyc-tree-plantation/Forstry_Planting_Cleaned_Dataset_3_27_2022.csv' AS row
+MATCH (updatedmonth:UpdatedMonth {month:row.Updated_Month})
+MATCH (inspection:Inspection {id: row.GlobalID })
+MERGE (updatedmonth)<-[:CREATED_ON]-(inspection);
+
+:auto USING PERIODIC COMMIT 1000
+LOAD CSV With HEADERS FROM 'https://storage.googleapis.com/nyc-tree-plantation/Forstry_Planting_Cleaned_Dataset_3_27_2022.csv' AS row
+MATCH (updatedyear:UpdatedYear  {year:row.Updated_Year})
+MATCH (inspection:Inspection {id: row.GlobalID })
+MERGE (updatedyear)<-[:CREATED_ON]-(inspection);
+
+
+
+///////////////////////
+
+:auto USING PERIODIC COMMIT 1000
+LOAD CSV With HEADERS FROM 'https://storage.googleapis.com/nyc-tree-plantation/Forstry_Planting_Cleaned_Dataset_3_27_2022.csv' AS row
+MATCH (plantingspace:PlantingSpace {id:row.OBJECTID})
+MATCH (inspection:Inspection {id: row.GlobalID })
+MERGE (plantingspace)<-[:CARRIED_ON]-(inspection);
+
 
 // CREATE JURISDICTION
 :auto USING PERIODIC COMMIT 1000
@@ -70,20 +137,6 @@ LOAD CSV With HEADERS FROM 'https://storage.googleapis.com/nyc-tree-plantation/F
 MATCH (plantingspace:PlantingSpace {id:row.OBJECTID})
 MATCH (jurisdiction:Jurisdiction {name:row.Jurisdiction})
 MERGE (plantingspace)-[:UNDER]->(jurisdiction);
-
-// CREATE LOCATION
-:auto USING PERIODIC COMMIT 1000
-LOAD CSV With HEADERS FROM 'https://storage.googleapis.com/nyc-tree-plantation/Forstry_Planting_Cleaned_Dataset_3_27_2022.csv' AS row
-MERGE (location:Location {coordinates: row.latitude + "," + row.longitude })
-ON CREATE SET
-location.latitude = row.latitude, location.longitude = row.longitude;
-
-:auto USING PERIODIC COMMIT 1000
-LOAD CSV With HEADERS FROM 'https://storage.googleapis.com/nyc-tree-plantation/Forstry_Planting_Cleaned_Dataset_3_27_2022.csv' AS row
-MATCH (plantingspace:PlantingSpace {id:row.OBJECTID})
-MATCH (location:Location {coordinates: row.latitude + "," + row.longitude })
-MERGE (plantingspace)-[:LOCATED]->(location);
-
 
 // CREATE DIMESNION
 :auto USING PERIODIC COMMIT 1000
@@ -98,7 +151,6 @@ MATCH (plantingspace:PlantingSpace {id:row.OBJECTID})
 MATCH (dimension:Dimension {dimension: row.Width + "," + row.Length })
 MERGE (plantingspace)-[:HAS]->(dimension);
 
-
 // CREATE AREA
 :auto USING PERIODIC COMMIT 1000
 LOAD CSV With HEADERS FROM 'https://storage.googleapis.com/nyc-tree-plantation/Forstry_Planting_Cleaned_Dataset_3_27_2022.csv' AS row
@@ -110,16 +162,9 @@ MATCH (plantingspace:PlantingSpace {id:row.OBJECTID})
 MATCH (area:Area {NTA: row.NTA })
 MERGE (plantingspace)-[:UNDER]->(area);
 
-// CREATE LOCALITY
-:auto USING PERIODIC COMMIT 1000
-LOAD CSV With HEADERS FROM 'https://storage.googleapis.com/nyc-tree-plantation/Forstry_Planting_Cleaned_Dataset_3_27_2022.csv' AS row
-MERGE (locality:Locality {name: row.Borough });
 
-:auto USING PERIODIC COMMIT 1000
-LOAD CSV With HEADERS FROM 'https://storage.googleapis.com/nyc-tree-plantation/Forstry_Planting_Cleaned_Dataset_3_27_2022.csv' AS row
-MATCH (plantingspace:PlantingSpace {id:row.OBJECTID})
-MATCH (locality:Locality {name: row.Borough })
-MERGE (plantingspace)-[:IN]->(locality);
+
+
 
 // CREATE SITE TYPE
 :auto USING PERIODIC COMMIT 1000
@@ -132,32 +177,6 @@ MATCH (plantingspace:PlantingSpace {id:row.OBJECTID})
 MATCH (sitetype:SiteType {type: row.PSSite })
 MERGE (plantingspace)-[:TYPE]->(sitetype);
 
-// CREATE INSPECTION
-:auto USING PERIODIC COMMIT 1000
-LOAD CSV With HEADERS FROM 'https://storage.googleapis.com/nyc-tree-plantation/Forstry_Planting_Cleaned_Dataset_3_27_2022.csv' AS row
-MERGE (inspection:Inspection {id: row.GlobalID })
-ON CREATE SET
-inspection.createdday = row.Created_Day, inspection.createdmonth = row.Created_Month, inspection.createdyear = row.Created_Year;
-
-:auto USING PERIODIC COMMIT 1000
-LOAD CSV With HEADERS FROM 'https://storage.googleapis.com/nyc-tree-plantation/Forstry_Planting_Cleaned_Dataset_3_27_2022.csv' AS row
-MATCH (plantingspace:PlantingSpace {id:row.OBJECTID})
-MATCH (inspection:Inspection {id: row.GlobalID })
-MERGE (plantingspace)<-[:CARRIED_ON]-(inspection);
-
-// CREATE UPDATED
-:auto USING PERIODIC COMMIT 1000
-LOAD CSV With HEADERS FROM 'https://storage.googleapis.com/nyc-tree-plantation/Forstry_Planting_Cleaned_Dataset_3_27_2022.csv' AS row
-MERGE (updated:Updated {timestamp: row.Updated_Day + "-" + row.Updated_Month + "-" + row.Updated_Year})
-ON CREATE SET
-updated.updatedday = row.Updated_Day, updated.updatedmonth = row.Updated_Month, updated.updatedyear = row.Updated_Year;
-
-:auto USING PERIODIC COMMIT 1000
-LOAD CSV With HEADERS FROM 'https://storage.googleapis.com/nyc-tree-plantation/Forstry_Planting_Cleaned_Dataset_3_27_2022.csv' AS row
-MATCH (plantingspace:PlantingSpace {id:row.OBJECTID})
-MATCH (updated:Updated {timestamp: row.Updated_Day + "-" + row.Updated_Month + "-" + row.Updated_Year})
-MERGE (plantingspace)-[:UPDATED_ON]->(updated);
-
 // CREATE ZONE
 :auto USING PERIODIC COMMIT 1000
 LOAD CSV With HEADERS FROM 'https://storage.googleapis.com/nyc-tree-plantation/Forstry_Planting_Cleaned_Dataset_3_27_2022.csv' AS row
@@ -168,6 +187,18 @@ LOAD CSV With HEADERS FROM 'https://storage.googleapis.com/nyc-tree-plantation/F
 MATCH (sitetype:SiteType {type:'Park'})
 MATCH (zone:Zone {name: row.ParkZone})
 MERGE (sitetype)-[:NAME]->(zone);
+
+
+// CREATE LOCALITY
+:auto USING PERIODIC COMMIT 1000
+LOAD CSV With HEADERS FROM 'https://storage.googleapis.com/nyc-tree-plantation/Forstry_Planting_Cleaned_Dataset_3_27_2022.csv' AS row
+MERGE (locality:Locality {name: row.Borough });
+
+:auto USING PERIODIC COMMIT 1000
+LOAD CSV With HEADERS FROM 'https://storage.googleapis.com/nyc-tree-plantation/Forstry_Planting_Cleaned_Dataset_3_27_2022.csv' AS row
+MATCH (plantingspace:PlantingSpace {id:row.OBJECTID})
+MATCH (locality:Locality {name: row.Borough })
+MERGE (plantingspace)-[:IN]->(locality);
 
 // CREATE ADDRESS
 :auto USING PERIODIC COMMIT 1000
@@ -193,6 +224,7 @@ MATCH (communityboard:CommunityBoard {name: row.CommunityBoard})
 MATCH (locality:Locality {name: row.Borough })
 MERGE (locality)-[:UNDER]->(communityboard);
 
+
 // CREATE ZIPCODE
 :auto USING PERIODIC COMMIT 1000
 LOAD CSV With HEADERS FROM 'https://storage.googleapis.com/nyc-tree-plantation/Forstry_Planting_Cleaned_Dataset_3_27_2022.csv' AS row
@@ -205,18 +237,58 @@ MATCH (locality:Locality {name: row.Borough })
 MATCH (zipcode:Zipcode {postcode: row.Postcode})
 MERGE (locality)-[:HAS]->(zipcode);
 
-// CREATE DISTRICTCODES
-:auto USING PERIODIC COMMIT 1000
-LOAD CSV With HEADERS FROM 'https://storage.googleapis.com/nyc-tree-plantation/Forstry_Planting_Cleaned_Dataset_3_27_2022.csv' AS row
-// MERGE (districtcodes:DistrictCodes {districtdetails: row.CouncilDistrict + "-" + row.StateSenate + "-" + row.StateAssembly + "-" + row.Congressional})
-MERGE (districtcodes:DistrictCodes {districtdetails: row.CouncilDistrict})
-ON CREATE SET
-districtcodes.councildistrict = row.CouncilDistrict, districtcodes.statesenate = row.StateSenate, districtcodes.stateassembly = row.StateAssembly, districtcodes.congressional = row.Congressional;
 
-// CREATE
+
+
+CREATE CONSTRAINT ON (councildistrict:CouncilDistrict) ASSERT councildistrict.name IS UNIQUE;
+CREATE CONSTRAINT ON (statesenate:StateSenate) ASSERT statesenate.name IS UNIQUE;
+CREATE CONSTRAINT ON (stateassembly:StateAssembly) ASSERT stateassembly.name IS UNIQUE;
+CREATE CONSTRAINT ON (congressional:Congressional) ASSERT congressional.name IS UNIQUE;
+
+
+
+// CREATE COUNCILDISTRICT
 :auto USING PERIODIC COMMIT 1000
 LOAD CSV With HEADERS FROM 'https://storage.googleapis.com/nyc-tree-plantation/Forstry_Planting_Cleaned_Dataset_3_27_2022.csv' AS row
-MATCH (districtcodes:DistrictCodes {metadata: row.CouncilDistrict + "-" + row.StateSenate + "-" + row.StateAssembly + "-" + row.Congressional})
+MERGE (councildistrict:CouncilDistrict {name: row.CouncilDistrict});
+
+:auto USING PERIODIC COMMIT 1000
+LOAD CSV With HEADERS FROM 'https://storage.googleapis.com/nyc-tree-plantation/Forstry_Planting_Cleaned_Dataset_3_27_2022.csv' AS row
+MATCH (councildistrict:CouncilDistrict {name: row.CouncilDistrict})
 MATCH (locality:Locality {name: row.Borough })
-MERGE (locality)-[:HAS]->(districtcodes);
+MERGE (locality)-[:UNDER]->(councildistrict);
 
+
+// CREATE STATESENATE
+:auto USING PERIODIC COMMIT 1000
+LOAD CSV With HEADERS FROM 'https://storage.googleapis.com/nyc-tree-plantation/Forstry_Planting_Cleaned_Dataset_3_27_2022.csv' AS row
+MERGE (statesenate:StateSenate {name: row.StateSenate});
+
+:auto USING PERIODIC COMMIT 1000
+LOAD CSV With HEADERS FROM 'https://storage.googleapis.com/nyc-tree-plantation/Forstry_Planting_Cleaned_Dataset_3_27_2022.csv' AS row
+MATCH (statesenate:StateSenate {name: row.StateSenate})
+MATCH (locality:Locality {name: row.Borough })
+MERGE (locality)-[:UNDER]->(statesenate);
+
+
+// CREATE StateAssembly
+:auto USING PERIODIC COMMIT 1000
+LOAD CSV With HEADERS FROM 'https://storage.googleapis.com/nyc-tree-plantation/Forstry_Planting_Cleaned_Dataset_3_27_2022.csv' AS row
+MERGE (stateassembly:StateAssembly {name: row.StateAssembly});
+
+:auto USING PERIODIC COMMIT 1000
+LOAD CSV With HEADERS FROM 'https://storage.googleapis.com/nyc-tree-plantation/Forstry_Planting_Cleaned_Dataset_3_27_2022.csv' AS row
+MATCH (stateassembly:StateAssembly {name: row.StateAssembly})
+MATCH (locality:Locality {name: row.Borough })
+MERGE (locality)-[:UNDER]->(stateassembly);
+
+// CREATE Congressional
+:auto USING PERIODIC COMMIT 1000
+LOAD CSV With HEADERS FROM 'https://storage.googleapis.com/nyc-tree-plantation/Forstry_Planting_Cleaned_Dataset_3_27_2022.csv' AS row
+MERGE (congressional:Congressional {name: row.Congressional});
+
+:auto USING PERIODIC COMMIT 1000
+LOAD CSV With HEADERS FROM 'https://storage.googleapis.com/nyc-tree-plantation/Forstry_Planting_Cleaned_Dataset_3_27_2022.csv' AS row
+MATCH (congressional:Congressional {name: row.Congressional})
+MATCH (locality:Locality {name: row.Borough })
+MERGE (locality)-[:UNDER]->(congressional);
