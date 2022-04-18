@@ -43,6 +43,10 @@ plantingspace.longitude = row.longitude;
 
 :auto USING PERIODIC COMMIT 1000
 LOAD CSV With HEADERS FROM $csv_file AS row
+MERGE (overheadutilities:OverheadUtilities {bool:toBoolean(toInteger(row.OverheadUtilities))});
+
+:auto USING PERIODIC COMMIT 1000
+LOAD CSV With HEADERS FROM $csv_file AS row
 MATCH (plantingspace:PlantingSpace {id:row.OBJECTID})
 MATCH (overheadutilities:OverheadUtilities {bool:toBoolean(toInteger(row.OverheadUtilities))})
 MERGE (plantingspace)-[:HAS_OVERHEAD_LINES]->(overheadutilities);
@@ -103,19 +107,19 @@ MERGE (updatedyear:UpdatedYear {year: row.Updated_Year });
 LOAD CSV With HEADERS FROM $csv_file AS row
 MATCH (updatedday:UpdatedDay {day:row.Updated_Day})
 MATCH (inspection:Inspection {id: row.GlobalID })
-MERGE (updatedday)<-[:CREATED_ON]-(inspection);
+MERGE (updatedday)<-[:UPDATED_ON]-(inspection);
 
 :auto USING PERIODIC COMMIT 1000
 LOAD CSV With HEADERS FROM $csv_file AS row
 MATCH (updatedmonth:UpdatedMonth {month:row.Updated_Month})
 MATCH (inspection:Inspection {id: row.GlobalID })
-MERGE (updatedmonth)<-[:CREATED_ON]-(inspection);
+MERGE (updatedmonth)<-[:UPDATED_ON]-(inspection);
 
 :auto USING PERIODIC COMMIT 1000
 LOAD CSV With HEADERS FROM $csv_file AS row
 MATCH (updatedyear:UpdatedYear  {year:row.Updated_Year})
 MATCH (inspection:Inspection {id: row.GlobalID })
-MERGE (updatedyear)<-[:CREATED_ON]-(inspection);
+MERGE (updatedyear)<-[:UPDATED_ON]-(inspection);
 
 
 :auto USING PERIODIC COMMIT 1000
