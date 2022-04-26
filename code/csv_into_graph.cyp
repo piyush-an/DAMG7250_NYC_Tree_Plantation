@@ -39,21 +39,31 @@ ON CREATE SET
 plantingspace.currentstatus = row.PSStatus,
 plantingspace.geometry = row.Geometry,
 plantingspace.latitude = row.latitude,
-plantingspace.longitude = row.longitude;
+plantingspace.longitude = row.longitude,
+plantingspace.overheadutilities = toBoolean(toInteger(row.OverheadUtilities)),
+plantingspace.length = row.Length,
+plantingspace.width = row.Width;
+
+// :auto USING PERIODIC COMMIT 1000
+// LOAD CSV With HEADERS FROM $csv_file AS row
+// MERGE (overheadutilities:OverheadUtilities {bool:toBoolean(toInteger(row.OverheadUtilities))});
+
+// :auto USING PERIODIC COMMIT 1000
+// LOAD CSV With HEADERS FROM $csv_file AS row
+// MATCH (plantingspace:PlantingSpace {id:row.OBJECTID})
+// MATCH (overheadutilities:OverheadUtilities {bool:toBoolean(toInteger(row.OverheadUtilities))})
+// MERGE (plantingspace)-[:HAS_OVERHEAD_LINES]->(overheadutilities);
 
 :auto USING PERIODIC COMMIT 1000
 LOAD CSV With HEADERS FROM $csv_file AS row
-MERGE (overheadutilities:OverheadUtilities {bool:toBoolean(toInteger(row.OverheadUtilities))});
-
-:auto USING PERIODIC COMMIT 1000
-LOAD CSV With HEADERS FROM $csv_file AS row
-MATCH (plantingspace:PlantingSpace {id:row.OBJECTID})
-MATCH (overheadutilities:OverheadUtilities {bool:toBoolean(toInteger(row.OverheadUtilities))})
-MERGE (plantingspace)-[:HAS_OVERHEAD_LINES]->(overheadutilities);
-
-:auto USING PERIODIC COMMIT 1000
-LOAD CSV With HEADERS FROM $csv_file AS row
-MERGE (inspection:Inspection {id: row.GlobalID });
+MERGE (inspection:Inspection {id: row.GlobalID })
+ON CREATE SET
+inspection.createdday = row.Created_Day,
+inspection.createdmonth = row.Created_Month,
+inspection.createdyear = row.Created_Year,
+inspection.updatedday = row.Updated_Day,
+inspection.updatedmonth = row.Updated_Month,
+inspection.updatedyear = row.Updated_Year;
 
 :auto USING PERIODIC COMMIT 1000
 LOAD CSV With HEADERS FROM $csv_file AS row
@@ -61,65 +71,65 @@ MATCH (plantingspace:PlantingSpace {id:row.OBJECTID})
 MATCH (inspection:Inspection {id: row.GlobalID })
 MERGE (plantingspace)<-[:CARRIED_ON]-(inspection);
 
-:auto USING PERIODIC COMMIT 1000
-LOAD CSV With HEADERS FROM $csv_file AS row
-MERGE (createdday:CreatedDay {day: row.Created_Day });
+// :auto USING PERIODIC COMMIT 1000
+// LOAD CSV With HEADERS FROM $csv_file AS row
+// MERGE (createdday:CreatedDay {day: row.Created_Day });
 
-:auto USING PERIODIC COMMIT 1000
-LOAD CSV With HEADERS FROM $csv_file AS row
-MERGE (createdmonth:CreatedMonth {month: row.Created_Month });
+// :auto USING PERIODIC COMMIT 1000
+// LOAD CSV With HEADERS FROM $csv_file AS row
+// MERGE (createdmonth:CreatedMonth {month: row.Created_Month });
 
-:auto USING PERIODIC COMMIT 1000
-LOAD CSV With HEADERS FROM $csv_file AS row
-MERGE (createdyear:CreatedYear {year: row.Created_Year });
+// :auto USING PERIODIC COMMIT 1000
+// LOAD CSV With HEADERS FROM $csv_file AS row
+// MERGE (createdyear:CreatedYear {year: row.Created_Year });
 
-:auto USING PERIODIC COMMIT 1000
-LOAD CSV With HEADERS FROM $csv_file AS row
-MATCH (createdday:CreatedDay {day:row.Created_Day})
-MATCH (inspection:Inspection {id: row.GlobalID })
-MERGE (createdday)<-[:CREATED_ON]-(inspection);
+// :auto USING PERIODIC COMMIT 1000
+// LOAD CSV With HEADERS FROM $csv_file AS row
+// MATCH (createdday:CreatedDay {day:row.Created_Day})
+// MATCH (inspection:Inspection {id: row.GlobalID })
+// MERGE (createdday)<-[:CREATED_ON]-(inspection);
 
-:auto USING PERIODIC COMMIT 1000
-LOAD CSV With HEADERS FROM $csv_file AS row
-MATCH (createdmonth:CreatedMonth {month:row.Created_Month})
-MATCH (inspection:Inspection {id: row.GlobalID })
-MERGE (createdmonth)<-[:CREATED_ON]-(inspection);
+// :auto USING PERIODIC COMMIT 1000
+// LOAD CSV With HEADERS FROM $csv_file AS row
+// MATCH (createdmonth:CreatedMonth {month:row.Created_Month})
+// MATCH (inspection:Inspection {id: row.GlobalID })
+// MERGE (createdmonth)<-[:CREATED_ON]-(inspection);
 
-:auto USING PERIODIC COMMIT 1000
-LOAD CSV With HEADERS FROM $csv_file AS row
-MATCH (createdyear:CreatedYear  {year:row.Created_Year})
-MATCH (inspection:Inspection {id: row.GlobalID })
-MERGE (createdyear)<-[:CREATED_ON]-(inspection);
+// :auto USING PERIODIC COMMIT 1000
+// LOAD CSV With HEADERS FROM $csv_file AS row
+// MATCH (createdyear:CreatedYear  {year:row.Created_Year})
+// MATCH (inspection:Inspection {id: row.GlobalID })
+// MERGE (createdyear)<-[:CREATED_ON]-(inspection);
 
-:auto USING PERIODIC COMMIT 1000
-LOAD CSV With HEADERS FROM $csv_file AS row
-MERGE (updatedday:UpdatedDay {day: row.Updated_Day });
+// :auto USING PERIODIC COMMIT 1000
+// LOAD CSV With HEADERS FROM $csv_file AS row
+// MERGE (updatedday:UpdatedDay {day: row.Updated_Day });
 
-:auto USING PERIODIC COMMIT 1000
-LOAD CSV With HEADERS FROM $csv_file AS row
-MERGE (updatedmonth:UpdatedMonth {month: row.Updated_Month });
+// :auto USING PERIODIC COMMIT 1000
+// LOAD CSV With HEADERS FROM $csv_file AS row
+// MERGE (updatedmonth:UpdatedMonth {month: row.Updated_Month });
 
-:auto USING PERIODIC COMMIT 1000
-LOAD CSV With HEADERS FROM $csv_file AS row
-MERGE (updatedyear:UpdatedYear {year: row.Updated_Year });
+// :auto USING PERIODIC COMMIT 1000
+// LOAD CSV With HEADERS FROM $csv_file AS row
+// MERGE (updatedyear:UpdatedYear {year: row.Updated_Year });
 
-:auto USING PERIODIC COMMIT 1000
-LOAD CSV With HEADERS FROM $csv_file AS row
-MATCH (updatedday:UpdatedDay {day:row.Updated_Day})
-MATCH (inspection:Inspection {id: row.GlobalID })
-MERGE (updatedday)<-[:UPDATED_ON]-(inspection);
+// :auto USING PERIODIC COMMIT 1000
+// LOAD CSV With HEADERS FROM $csv_file AS row
+// MATCH (updatedday:UpdatedDay {day:row.Updated_Day})
+// MATCH (inspection:Inspection {id: row.GlobalID })
+// MERGE (updatedday)<-[:UPDATED_ON]-(inspection);
 
-:auto USING PERIODIC COMMIT 1000
-LOAD CSV With HEADERS FROM $csv_file AS row
-MATCH (updatedmonth:UpdatedMonth {month:row.Updated_Month})
-MATCH (inspection:Inspection {id: row.GlobalID })
-MERGE (updatedmonth)<-[:UPDATED_ON]-(inspection);
+// :auto USING PERIODIC COMMIT 1000
+// LOAD CSV With HEADERS FROM $csv_file AS row
+// MATCH (updatedmonth:UpdatedMonth {month:row.Updated_Month})
+// MATCH (inspection:Inspection {id: row.GlobalID })
+// MERGE (updatedmonth)<-[:UPDATED_ON]-(inspection);
 
-:auto USING PERIODIC COMMIT 1000
-LOAD CSV With HEADERS FROM $csv_file AS row
-MATCH (updatedyear:UpdatedYear  {year:row.Updated_Year})
-MATCH (inspection:Inspection {id: row.GlobalID })
-MERGE (updatedyear)<-[:UPDATED_ON]-(inspection);
+// :auto USING PERIODIC COMMIT 1000
+// LOAD CSV With HEADERS FROM $csv_file AS row
+// MATCH (updatedyear:UpdatedYear  {year:row.Updated_Year})
+// MATCH (inspection:Inspection {id: row.GlobalID })
+// MERGE (updatedyear)<-[:UPDATED_ON]-(inspection);
 
 
 :auto USING PERIODIC COMMIT 1000
@@ -140,17 +150,17 @@ MATCH (jurisdiction:Jurisdiction {name:row.Jurisdiction})
 MERGE (plantingspace)-[:UNDER]->(jurisdiction);
 
 // CREATE DIMESNION
-:auto USING PERIODIC COMMIT 1000
-LOAD CSV With HEADERS FROM $csv_file AS row
-MERGE (dimension:Dimension {dimension: row.Width + "," + row.Length })
-ON CREATE SET
-dimension.length = row.Length, dimension.width = row.Width;
+// :auto USING PERIODIC COMMIT 1000
+// LOAD CSV With HEADERS FROM $csv_file AS row
+// MERGE (dimension:Dimension {dimension: row.Width + "," + row.Length })
+// ON CREATE SET
+// dimension.length = row.Length, dimension.width = row.Width;
 
-:auto USING PERIODIC COMMIT 1000
-LOAD CSV With HEADERS FROM $csv_file AS row
-MATCH (plantingspace:PlantingSpace {id:row.OBJECTID})
-MATCH (dimension:Dimension {dimension: row.Width + "," + row.Length })
-MERGE (plantingspace)-[:HAS]->(dimension);
+// :auto USING PERIODIC COMMIT 1000
+// LOAD CSV With HEADERS FROM $csv_file AS row
+// MATCH (plantingspace:PlantingSpace {id:row.OBJECTID})
+// MATCH (dimension:Dimension {dimension: row.Width + "," + row.Length })
+// MERGE (plantingspace)-[:HAS]->(dimension);
 
 // CREATE AREA
 :auto USING PERIODIC COMMIT 1000
@@ -188,7 +198,14 @@ MERGE (sitetype)-[:NAME]->(zone);
 // CREATE LOCALITY
 :auto USING PERIODIC COMMIT 1000
 LOAD CSV With HEADERS FROM $csv_file AS row
-MERGE (locality:Locality {name: row.Borough });
+MERGE (locality:Locality {name: row.Borough })
+ON CREATE SET
+locality.communityboard = row.CommunityBoard,
+locality.councildistrict = row.CouncilDistrict,
+locality.statesenate = row.StateSenate,
+locality.stateassembly = row.StateAssembly,
+locality.congressional = row.Congressional;
+
 
 :auto USING PERIODIC COMMIT 1000
 LOAD CSV With HEADERS FROM $csv_file AS row
@@ -210,22 +227,22 @@ MATCH (address:Address {fulladdress:row.Number + "-" + row.Street + "-" + row.Cr
 MERGE (locality)-[:HAS]->(address);
 
 // CREATE COMMUNITYBOARD
-:auto USING PERIODIC COMMIT 1000
-LOAD CSV With HEADERS FROM $csv_file AS row
-MERGE (communityboard:CommunityBoard {name: row.CommunityBoard});
+// :auto USING PERIODIC COMMIT 1000
+// LOAD CSV With HEADERS FROM $csv_file AS row
+// MERGE (communityboard:CommunityBoard {name: row.CommunityBoard});
 
-:auto USING PERIODIC COMMIT 1000
-LOAD CSV With HEADERS FROM $csv_file AS row
-MATCH (communityboard:CommunityBoard {name: row.CommunityBoard})
-MATCH (locality:Locality {name: row.Borough })
-MERGE (locality)-[:UNDER]->(communityboard);
+// :auto USING PERIODIC COMMIT 1000
+// LOAD CSV With HEADERS FROM $csv_file AS row
+// MATCH (communityboard:CommunityBoard {name: row.CommunityBoard})
+// MATCH (locality:Locality {name: row.Borough })
+// MERGE (locality)-[:UNDER]->(communityboard);
 
 // CREATE ZIPCODE
 :auto USING PERIODIC COMMIT 1000
 LOAD CSV With HEADERS FROM $csv_file AS row
 MERGE (zipcode:Zipcode {postcode: row.Postcode});
 
-// CREATE
+
 :auto USING PERIODIC COMMIT 1000
 LOAD CSV With HEADERS FROM $csv_file AS row
 MATCH (locality:Locality {name: row.Borough })
@@ -233,45 +250,45 @@ MATCH (zipcode:Zipcode {postcode: row.Postcode})
 MERGE (locality)-[:HAS]->(zipcode);
 
 // CREATE COUNCILDISTRICT
-:auto USING PERIODIC COMMIT 1000
-LOAD CSV With HEADERS FROM $csv_file AS row
-MERGE (councildistrict:CouncilDistrict {name: row.CouncilDistrict});
+// :auto USING PERIODIC COMMIT 1000
+// LOAD CSV With HEADERS FROM $csv_file AS row
+// MERGE (councildistrict:CouncilDistrict {name: row.CouncilDistrict});
 
-:auto USING PERIODIC COMMIT 1000
-LOAD CSV With HEADERS FROM $csv_file AS row
-MATCH (councildistrict:CouncilDistrict {name: row.CouncilDistrict})
-MATCH (locality:Locality {name: row.Borough })
-MERGE (locality)-[:UNDER]->(councildistrict);
+// :auto USING PERIODIC COMMIT 1000
+// LOAD CSV With HEADERS FROM $csv_file AS row
+// MATCH (councildistrict:CouncilDistrict {name: row.CouncilDistrict})
+// MATCH (locality:Locality {name: row.Borough })
+// MERGE (locality)-[:UNDER]->(councildistrict);
 
-// CREATE STATESENATE
-:auto USING PERIODIC COMMIT 1000
-LOAD CSV With HEADERS FROM $csv_file AS row
-MERGE (statesenate:StateSenate {name: row.StateSenate});
+// // CREATE STATESENATE
+// :auto USING PERIODIC COMMIT 1000
+// LOAD CSV With HEADERS FROM $csv_file AS row
+// MERGE (statesenate:StateSenate {name: row.StateSenate});
 
-:auto USING PERIODIC COMMIT 1000
-LOAD CSV With HEADERS FROM $csv_file AS row
-MATCH (statesenate:StateSenate {name: row.StateSenate})
-MATCH (locality:Locality {name: row.Borough })
-MERGE (locality)-[:UNDER]->(statesenate);
+// :auto USING PERIODIC COMMIT 1000
+// LOAD CSV With HEADERS FROM $csv_file AS row
+// MATCH (statesenate:StateSenate {name: row.StateSenate})
+// MATCH (locality:Locality {name: row.Borough })
+// MERGE (locality)-[:UNDER]->(statesenate);
 
-// CREATE StateAssembly
-:auto USING PERIODIC COMMIT 1000
-LOAD CSV With HEADERS FROM $csv_file AS row
-MERGE (stateassembly:StateAssembly {name: row.StateAssembly});
+// // CREATE StateAssembly
+// :auto USING PERIODIC COMMIT 1000
+// LOAD CSV With HEADERS FROM $csv_file AS row
+// MERGE (stateassembly:StateAssembly {name: row.StateAssembly});
 
-:auto USING PERIODIC COMMIT 1000
-LOAD CSV With HEADERS FROM $csv_file AS row
-MATCH (stateassembly:StateAssembly {name: row.StateAssembly})
-MATCH (locality:Locality {name: row.Borough })
-MERGE (locality)-[:UNDER]->(stateassembly);
+// :auto USING PERIODIC COMMIT 1000
+// LOAD CSV With HEADERS FROM $csv_file AS row
+// MATCH (stateassembly:StateAssembly {name: row.StateAssembly})
+// MATCH (locality:Locality {name: row.Borough })
+// MERGE (locality)-[:UNDER]->(stateassembly);
 
-// CREATE Congressional
-:auto USING PERIODIC COMMIT 1000
-LOAD CSV With HEADERS FROM $csv_file AS row
-MERGE (congressional:Congressional {name: row.Congressional});
+// // CREATE Congressional
+// :auto USING PERIODIC COMMIT 1000
+// LOAD CSV With HEADERS FROM $csv_file AS row
+// MERGE (congressional:Congressional {name: row.Congressional});
 
-:auto USING PERIODIC COMMIT 1000
-LOAD CSV With HEADERS FROM $csv_file AS row
-MATCH (congressional:Congressional {name: row.Congressional})
-MATCH (locality:Locality {name: row.Borough })
-MERGE (locality)-[:UNDER]->(congressional);
+// :auto USING PERIODIC COMMIT 1000
+// LOAD CSV With HEADERS FROM $csv_file AS row
+// MATCH (congressional:Congressional {name: row.Congressional})
+// MATCH (locality:Locality {name: row.Borough })
+// MERGE (locality)-[:UNDER]->(congressional);
