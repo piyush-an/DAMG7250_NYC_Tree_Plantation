@@ -3,34 +3,34 @@
 // Contact: anand.pi@northeastern.edu
 
 // Set parameter for CSV Data File Source
-:param csv_file => 'https://storage.googleapis.com/nyc-tree-plantation/Forstry_Planting_Cleaned_Dataset_3_27_2022.csv';
+:param csv_file => 'https://storage.googleapis.com/nyc-tree-plantation/Forstry_Planting_Cleaned_Dataset.csv';
 
 CREATE CONSTRAINT ON (plantingspace:PlantingSpace) ASSERT plantingspace.id IS UNIQUE;
 CREATE CONSTRAINT ON (area:Area) ASSERT area.NTA IS UNIQUE;
-CREATE CONSTRAINT ON (overheadutilities:OverheadUtilities) ASSERT overheadutilities.bool IS UNIQUE;
-CREATE CONSTRAINT ON (currentstatus:CurrentStatus) ASSERT currentstatus.status IS UNIQUE;
+// CREATE CONSTRAINT ON (overheadutilities:OverheadUtilities) ASSERT overheadutilities.bool IS UNIQUE;
+// CREATE CONSTRAINT ON (currentstatus:CurrentStatus) ASSERT currentstatus.status IS UNIQUE;
 CREATE CONSTRAINT ON (jurisdiction:Jurisdiction) ASSERT jurisdiction.name IS UNIQUE;
-CREATE CONSTRAINT ON (location:Location) ASSERT location.coordinates IS UNIQUE;
+// CREATE CONSTRAINT ON (location:Location) ASSERT location.coordinates IS UNIQUE;
 CREATE CONSTRAINT ON (locality:Locality) ASSERT locality.name IS UNIQUE;
 CREATE CONSTRAINT ON (sitetype:SiteType) ASSERT sitetype.type IS UNIQUE;
 CREATE CONSTRAINT ON (inspection:Inspection) ASSERT inspection.id IS UNIQUE;
-CREATE CONSTRAINT ON (updated:Updated) ASSERT updated.timestamp IS UNIQUE;
+// CREATE CONSTRAINT ON (updated:Updated) ASSERT updated.timestamp IS UNIQUE;
 CREATE CONSTRAINT ON (zone:Zone) ASSERT zone.name IS UNIQUE;
 CREATE CONSTRAINT ON (address:Address) ASSERT address.fulladdress IS UNIQUE;
-CREATE CONSTRAINT ON (communityboard:CommunityBoard) ASSERT communityboard.name IS UNIQUE;
+// CREATE CONSTRAINT ON (communityboard:CommunityBoard) ASSERT communityboard.name IS UNIQUE;
 CREATE CONSTRAINT ON (zipcode:Zipcode) ASSERT zipcode.postcode IS UNIQUE;
-CREATE CONSTRAINT ON (dimension:Dimension ) ASSERT dimension.dimension IS UNIQUE;
-CREATE CONSTRAINT ON (districtcodes:DistrictCodes) ASSERT districtcodes.districtdetails IS UNIQUE;
-CREATE CONSTRAINT ON (createdday:CreatedDay) ASSERT createdday.day IS UNIQUE;
-CREATE CONSTRAINT ON (createdmonth:CreatedMonth) ASSERT createdmonth.date IS UNIQUE;
-CREATE CONSTRAINT ON (createdyear:CreatedYear) ASSERT createdyear.year IS UNIQUE;
-CREATE CONSTRAINT ON (updatedday:UpdatedDay) ASSERT updatedday.day IS UNIQUE;
-CREATE CONSTRAINT ON (updatedmonth:UpdatedMonth) ASSERT updatedmonth.date IS UNIQUE;
-CREATE CONSTRAINT ON (updatedyear:UpdatedYear) ASSERT updatedyear.year IS UNIQUE;
-CREATE CONSTRAINT ON (councildistrict:CouncilDistrict) ASSERT councildistrict.name IS UNIQUE;
-CREATE CONSTRAINT ON (statesenate:StateSenate) ASSERT statesenate.name IS UNIQUE;
-CREATE CONSTRAINT ON (stateassembly:StateAssembly) ASSERT stateassembly.name IS UNIQUE;
-CREATE CONSTRAINT ON (congressional:Congressional) ASSERT congressional.name IS UNIQUE;
+// CREATE CONSTRAINT ON (dimension:Dimension ) ASSERT dimension.dimension IS UNIQUE;
+// CREATE CONSTRAINT ON (districtcodes:DistrictCodes) ASSERT districtcodes.districtdetails IS UNIQUE;
+// CREATE CONSTRAINT ON (createdday:CreatedDay) ASSERT createdday.day IS UNIQUE;
+// CREATE CONSTRAINT ON (createdmonth:CreatedMonth) ASSERT createdmonth.date IS UNIQUE;
+// CREATE CONSTRAINT ON (createdyear:CreatedYear) ASSERT createdyear.year IS UNIQUE;
+// CREATE CONSTRAINT ON (updatedday:UpdatedDay) ASSERT updatedday.day IS UNIQUE;
+// CREATE CONSTRAINT ON (updatedmonth:UpdatedMonth) ASSERT updatedmonth.date IS UNIQUE;
+// CREATE CONSTRAINT ON (updatedyear:UpdatedYear) ASSERT updatedyear.year IS UNIQUE;
+// CREATE CONSTRAINT ON (councildistrict:CouncilDistrict) ASSERT councildistrict.name IS UNIQUE;
+// CREATE CONSTRAINT ON (statesenate:StateSenate) ASSERT statesenate.name IS UNIQUE;
+// CREATE CONSTRAINT ON (stateassembly:StateAssembly) ASSERT stateassembly.name IS UNIQUE;
+// CREATE CONSTRAINT ON (congressional:Congressional) ASSERT congressional.name IS UNIQUE;
 
 :auto USING PERIODIC COMMIT 1000
 LOAD CSV With HEADERS FROM $csv_file AS row
@@ -38,8 +38,8 @@ MERGE (plantingspace:PlantingSpace {id:row.OBJECTID})
 ON CREATE SET
 plantingspace.currentstatus = row.PSStatus,
 plantingspace.geometry = row.Geometry,
-plantingspace.latitude = row.latitude,
-plantingspace.longitude = row.longitude,
+plantingspace.latitude = row.Latitude,
+plantingspace.longitude = row.Longitude,
 plantingspace.overheadutilities = toBoolean(toInteger(row.OverheadUtilities)),
 plantingspace.length = row.Length,
 plantingspace.width = row.Width;
